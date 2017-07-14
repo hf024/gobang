@@ -1,0 +1,64 @@
+body{
+    background-color: #E3EDEC;
+}
+
+#login_name{
+    border: 2px solid #689892;
+    padding: 20px 80px 40px;
+    border-radius: 10px;
+}
+
+#login_name p strong{
+    color: red;
+    font-style: italic;
+}
+
+#login_name label{
+    font-size: 18px;
+}
+
+#login_name .button{
+    margin-top: 20px;
+}
+
+#login_name a{
+    margin-right:20px;
+}
+#user_name{
+    width: 200px;
+    height: 20px;
+    line-height: 20px;
+    margin-bottom: 5px;
+}
+
+#chess{
+    width: 806px;
+}
+
+.textlimit{
+    display: block;
+    width: 120px;             /*限制宽度*/
+    overflow: hidden;         /*超出隐藏*/
+    white-space: nowrap;      /*规定段落中的文本不换行*/
+    text-overflow: ellipsis;  /*省略号*/
+}
+
+
+.online div{
+    margin:0 5px;
+    height:35px;
+    line-height: 35px;
+    float: left;
+}
+
+.online span{
+    float: left;
+    height: 35px;
+    line-height: 35px;
+}
+
+
+.online .me{
+    display: block;
+    width: 36px;
+}

@@ -1,0 +1,160 @@
+body {
+    display: flex;
+    font: 400 16px "微软雅黑","宋体",sans-serif;
+    color: #333333;
+}
+div, p{margin:0; padding:0}
+input,button,select,textarea,a{outline:none}
+
+h1{
+    width: 535px;
+    text-align: center;
+    margin: 5px 0 15px 0;
+}
+button{
+    font-size: 16px;
+    width: 96px;
+    height: 32px;
+    line-height: 100%;
+}
+ul {
+    list-style-type:none;
+    margin-left: 14px;
+}
+
+ul li{
+    margin: 20px 0;
+}
+
+a{
+    text-decoration: none;
+    color: blue;
+}
+
+/*
+不固定宽和高的水平垂直居中方法(css3)
+transform: translate(left, top) 方法，元素从其当前位置移动，
+根据给定的 left（x 坐标） 和 top（y 坐标）
+*/
+
+.center{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%,-50%); /*Safari、Chrome*/
+    -moz-transform: translate(-50%,-50%); /*Firefox*/
+    -ms-transform: translate(-50%,-50%); /*IE9*/
+    -o-transform: translate(-50%,-50%);  /*Opera*/
+    transform: translate(-50%,-50%);    /* IE10+ */
+}
+
+#chess{
+    width: 766px;
+}
+
+.chess-board {
+    margin-bottom: 20px;
+    background: url('../images/board_bg.jpg') no-repeat;
+    width:535px;
+    height:535px;
+    padding:5px;
+    float: left;
+    cursor: pointer;
+}
+
+.cell{
+    float:left;
+    width:35px;height:35px;
+}
+
+.cell-b{
+    background: transparent url('../images/b.png') no-repeat center center;
+    background-size: 32px 32px;
+}
+.cell-w{
+    background: url('../images/w.png') no-repeat center center;
+    background-size: 32px 32px;
+}
+
+.curplayer{
+    color: red;
+    font-weight: bold;
+}
+
+.game-info{
+    float: left;
+    width: 220px;
+}
+
+.game-role{
+    margin: 30px 0 30px 55px;
+    text-align: left;
+    clear: both;
+}
+
+.btn {
+    background-color: #4da709;
+    color: #333333;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    margin-left: 23px;
+    border: 1px solid;
+}
+
+.hidden{
+    display: none;
+}
+
+.show {
+    display: block;
+
+}
+
+.mask {
+    position: absolute;
+    top: 0;
+    filter: alpha(opacity=60);
+    background-color: #777;
+    z-index: 1002;
+    left: 0;
+    opacity:0.8;
+    -moz-opacity:0.8;          /* 老版本Mozilla */
+    -khtml-opacity: 0.8;       /* 老版本Safari*/
+    filter:alpha(opacity=0.8); /* 针对 IE8 以及更早的版本 */
+    width: 100%;
+    height: 100%;
+}
+
+#info{
+    position: fixed;
+    top: 300px;
+    left: 50%;
+    margin-left: -296px;
+    width: 360px;
+    height: 132px;
+    text-align: center;
+    background: #ffffff;
+    box-shadow: 2px 2px 5px;
+    z-index: 1003;
+}
+
+#msg{
+    margin:30px 0 20px;
+}
+
+
+#result a.btn{
+    display: inline-block;
+    width: 80px;
+    height: 32px;
+    padding: 0;
+    line-height: 32px;
+    border-radius: 3px;
+}
+
+.fl{
+    float: left;
+}
+ .clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+

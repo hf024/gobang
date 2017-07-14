@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM版五子棋</title>
+    <link type="text/css" rel="stylesheet" href="css/common.css">
+    <link type="text/css" rel="stylesheet" href="css/dom.css">
+</head>
+<body>
+<div id="wrapper" class="center">
+    <h1>DOM版五子棋（单人版)</h1>
+    <div id="chess">
+        <div id="chess-board-wrapper"></div>
+        <div class="game-info">
+        <div class="game-role"><span>现在轮到：</span><span class="curplayer">黑方</span></div>
+        <ul id="game-button">
+            <li>
+                <button id="btnRestart" disabled="disabled" class="btn-restart">重新开始</button>
+            </li>
+            <li>
+                <button id="btnWithdraw" disabled="disabled">悔棋</button>
+            </li>
+            <li>
+                <button id="btnUndoWithdraw" disabled="disabled">撤销悔棋</button>
+            </li>
+            <li>
+                <a href="./gobang-dom.html" id="btnDom" class="hidden">切换到DOM版</a>
+            </li>
+            <li>
+                <a href="./gobang-canvas.html" id="btnCanvas" class="">切换到Canva版</a>
+            </li>
+            <li>
+                <a href="./index.html" class="">切换到React版</a>
+            </li>
+        </ul>
+    </div>
+    </div>
+</div>
+<div id="result" class="hidden">
+    <div class="mask"></div>
+    <div id="info">
+        <div id="msg"></div>
+        <a href="javascript:void(0);" class="btn btn-restart">再来一局</a>
+    </div>
+</div>
+</body>
+<script src="js/jquery.min.js"></script>
+<script src="js/gobang.js"></script>
+<script>
+    $(function () {
+        Game.initEvent(1);
+        Game.init(1);
+    });
+</script>
+</html>

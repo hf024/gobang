@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>React+node.js实现的五子棋</title>
+    <link type="text/css" rel="stylesheet" href="css/common.css">
+    <link type="text/css" rel="stylesheet" href="css/react.css">
+</head>
+<body>
+<div id="wrapper">
+    <div id="chess" class="hidden center"></div>
+    <div id='login' class="center">
+        <div id='login_name'>
+            <h2>两人对战五子棋</h2>
+            <label for="user_name">用户名：</label>
+            <input type="text" id="user_name">
+            <p class="desc">输入用户名后，按<strong>回车</strong>进入游戏</p>
+            <div class="button">
+                <a href="./gobang-canvas.html" id="btnCanvas">切换到Canva版</a>
+                <a href="./gobang-dom.html" id="btnDom" class="">切换到DOM版</a>
+            </div>
+        </div>
+    </div>
+    <div id="result">
+    </div>
+</div>
+</body>
+<script src='js/react_gobang.js'></script>
+</html>

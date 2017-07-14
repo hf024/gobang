@@ -1,0 +1,14 @@
+body{
+    background-color: #EBEBE4;
+}
+
+#chess-board-canvas{
+    float: left;
+    background: url('../images/board_bg.jpg') no-repeat;
+    cursor: pointer;
+}
+
+.canvas .btn{
+    background-color: #3ca67f;
+}
+
