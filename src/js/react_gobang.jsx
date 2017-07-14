@@ -434,7 +434,7 @@ class GoBang extends React.Component {
             //若游戏未结束，则执行悔棋步骤
             this.setState({
                 stepNumber: step,
-                isTurnBlack: (step % 2) === 0,
+                isTurnBlack: !this.state.isTurnBlack,
                 gameOver: false,
                 withdraw: role ? 'b' : 'w'
             });
