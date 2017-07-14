@@ -4,15 +4,16 @@
  * Author: apple
  * Date: 2017/7/10.
  */
-var React = require('react');
-var ReactDOM = require('react-dom');
+let React = require('react');
+let ReactDOM = require('react-dom');
 
 //登录处理
-var chess = document.getElementById('chess');
-var login = document.getElementById('login');
-var username = document.getElementById('user_name');
-var io = require('socket.io-client');
-var socket = io();
+let chess = document.getElementById('chess');
+let login = document.getElementById('login');
+let username = document.getElementById('user_name');
+let io = require('socket.io-client');
+let socket = io();
+let playing = false;
 
 username.focus();
 
@@ -39,7 +40,9 @@ username.onkeydown = function (e) {
 
 //在加载unload事件前执行
 window.onbeforeunload = function () {
-    return '当前正在下棋中，你确定要离开吗？';
+    if(playing){
+        return '当前正在下棋中，你确定要离开吗？';
+    }
 };
 
 //获取所在桌当前所有在线人数
@@ -124,7 +127,7 @@ function Square(props) {
 function Button(props) {
     return (
         <li key="restart">
-            <button type="button" id={props.id} disabled={props.disabled}
+            <button type="button" className="button" id={props.id} disabled={props.disabled}
                     onClick={() => props.onClick()}>{props.desc}</button>
         </li>
     );
@@ -142,7 +145,7 @@ function Result(props) {
     );
 }
 //定义棋盘大小
-var board = {
+let board = {
     rows: 15,
     cols: 15,
 };
@@ -199,7 +202,7 @@ class GoBang extends React.Component {
     //执行一次，在初始化render之前执行，如果在这个方法内调用setState，
     // render()知道state发生变化，并且只执行一次
     componentWillMount() {
-        var that = this;
+        let that = this;
 
         //监听来自服务发出的alloc_role事件
         socket.on('alloc_role', function (msg) {
@@ -226,7 +229,7 @@ class GoBang extends React.Component {
 
     //componentDidMount类似js中的window.onload，执行在render方法之后，也就是页面的组件渲染完毕之后
     componentDidMount() {
-        var that = this;
+        let that = this;
 
         //监听服务器发送过来的落子事件
         socket.on('play', function (data) {
@@ -258,7 +261,7 @@ class GoBang extends React.Component {
         // 3 因得到对方同意，双方重新开始
         socket.on('restart', function (data) {
             let r = false;
-            var type = parseInt(data.type);
+            let type = parseInt(data.type);
             if (type === 1) {
                 if (data.meBlack === that.state.meBlack) {
                     r = true;
@@ -300,7 +303,7 @@ class GoBang extends React.Component {
         // 4 因得到对方同意，撤销悔棋成功
         socket.on('withdraw', function (data) {
             let r = false;
-            var type = parseInt(data.type);
+            let type = parseInt(data.type);
             if (type === 1 || type === 2) {
                 if (data.meBlack === that.state.meBlack) {
                     r = true;
@@ -352,6 +355,7 @@ class GoBang extends React.Component {
             return;
         }
 
+        playing = true;
         //判断该谁落子
         if (this.state.isTurnBlack !== this.state.meBlack) {
             alert('不着急，等对方先下吧~');
@@ -387,6 +391,7 @@ class GoBang extends React.Component {
         //console.log(squares, this.state.pos, val);
         // 更新的时候触发
         if (this.state.gameOver) {
+            playing = false;
             let msg = '';
             if (!this.state.isTurnBlack === this.state.meBlack) {
                 msg = '恭喜你，赢得本局。再来一局吧！';
@@ -485,9 +490,9 @@ class GoBang extends React.Component {
             curplayer = '';
             msg = '你的玩伴还没有来，再等等吧~';
         } else {
-            if(this.state.history.length > 1){
+            if (this.state.history.length > 1) {
                 msg = '正在游戏中......';
-            }else{
+            } else {
                 msg = '可以开始游戏了~';
             }
             curplayer = this.state.isTurnBlack === this.state.meBlack ? '我' : '对方';
@@ -504,7 +509,7 @@ class GoBang extends React.Component {
                 />
                 <div className="game-info">
                     <OnlinePlayer role={role} online={this.state.onlineUsers}/>
-                    <GameRole msg={msg} curplayer={curplayer} />
+                    <GameRole msg={msg} curplayer={curplayer}/>
                     <ul id="game-button">
                         <Button disabled={btn_restart_disabled} desc="重新开始" onClick={() => this.restart(1)}/>
                         <Button id='btn_withdraw' disabled={btn_withdraw_disabled} desc="悔棋"
@@ -529,8 +534,8 @@ class GoBang extends React.Component {
 ReactDOM.render(<GoBang />, document.getElementById("chess"));
 
 function isGameOVER(squares, i, val) {
-    var row = Math.floor(i / board.cols);
-    var col = i % board.cols;
+    let row = Math.floor(i / board.cols);
+    let col = i % board.cols;
 
     //四个方向（横、纵、对角、斜对角）依次判断
     return isVerWin(squares, row, col, val) || isHorWin(squares, row, col, val)
@@ -539,10 +544,10 @@ function isGameOVER(squares, i, val) {
 
 //横向判断
 function isVerWin(squares, row, col, val) {
-    var counter = 1;
+    let counter = 1;
 
     //1.向左，计算连续棋子数
-    for (var j = col - 1; j >= 0; j--) {
+    for (let j = col - 1; j >= 0; j--) {
         if (squares[row * board.cols + j] === val) {
             counter++;
         } else {
@@ -551,7 +556,7 @@ function isVerWin(squares, row, col, val) {
     }
 
     //2.向右，计算连续棋子数
-    for (var j = col + 1; j < board.cols; j++) {
+    for (let j = col + 1; j < board.cols; j++) {
         if (squares[row * board.cols + j] === val) {
             counter++;
         } else {
@@ -564,9 +569,9 @@ function isVerWin(squares, row, col, val) {
 
 //纵向判断
 function isHorWin(squares, row, col, val) {
-    var counter = 1;
+    let counter = 1;
     //向上，找连续棋子数
-    for (var i = row - 1; i >= 0; i--) {
+    for (let i = row - 1; i >= 0; i--) {
         if (squares[i * board.cols + col] === val) {
             counter++;
         } else {
@@ -575,7 +580,7 @@ function isHorWin(squares, row, col, val) {
     }
 
     //2 向下，找连续棋子数
-    for (var i = row + 1; i < board.cols; i++) {
+    for (let i = row + 1; i < board.cols; i++) {
         if (squares[i * board.cols + col] === val) {
             counter++;
         } else {
@@ -588,10 +593,10 @@ function isHorWin(squares, row, col, val) {
 
 //正对角向判断
 function isPosDiagWin(squares, row, col, val) {
-    var counter = 1;
+    let counter = 1;
 
     //1 右上, 找连续棋子数
-    for (var i = row - 1, j = col + 1; i >= 0 && j < board.cols; i--, j++) {
+    for (let i = row - 1, j = col + 1; i >= 0 && j < board.cols; i--, j++) {
         if (squares[i * board.cols + j] === val) {
             counter++;
         } else {
@@ -599,7 +604,7 @@ function isPosDiagWin(squares, row, col, val) {
         }
     }
     //2 左下, 找连续棋子数
-    for (var i = row + 1, j = col - 1; i < board.rows && j >= 0; i++, j--) {
+    for (let i = row + 1, j = col - 1; i < board.rows && j >= 0; i++, j--) {
         if (squares[i * board.cols + j] === val) {
             counter++;
         } else {
@@ -612,9 +617,9 @@ function isPosDiagWin(squares, row, col, val) {
 
 //斜对角向判断
 function isNegDiagWin(squares, row, col, val) {
-    var counter = 1;
+    let counter = 1;
     //1 左上, 找连续棋子数
-    for (var i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
+    for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
         if (squares[i * board.cols + j] === val) {
             counter++;
         } else {
@@ -622,7 +627,7 @@ function isNegDiagWin(squares, row, col, val) {
         }
     }
     //2 右下, 找连续棋子数
-    for (var i = row + 1, j = col + 1; i < board.rows && j < board.cols; i++, j++) {
+    for (let i = row + 1, j = col + 1; i < board.rows && j < board.cols; i++, j++) {
         if (squares[i * board.cols + j] === val) {
             counter++;
         } else {

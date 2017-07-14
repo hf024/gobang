@@ -21,10 +21,13 @@ cnpm install --save-dev babel-core babel-loader babel-preset-es2015 babel-preset
 1 安装依赖包  
 cnpm install  
 
-2.开启服务器
+2 打包编译
+npm run build
+
+3 开启服务器
 node server.js
 
-3.浏览器查看  
+4 浏览器查看  
 http://127.0.0.1:8001/index.html
 
 #程序说明  

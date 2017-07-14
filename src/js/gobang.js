@@ -7,14 +7,14 @@
 /*
  GoBang对象用于根据五子棋规则判断当前棋局是否结束
  */
-var GoBang = {
+const GoBang = {
     winChesses: 5,   //能赢连续的棋子数
 
     //横向判断
     isVerWin: function (chessBoard, row, col, val) {
-        var counter = 1;
+        let counter = 1;
         //1.向左，计算连续棋子数
-        for (var j = col - 1; j >= 0; j--) {
+        for (let j = col - 1; j >= 0; j--) {
             if (chessBoard[row][j] === val) {
                 counter++;
             } else {
@@ -23,7 +23,7 @@ var GoBang = {
         }
 
         //2.向右，计算连续棋子数
-        for (var j = col + 1; j < chessBoard[0].length; j++) {
+        for (let j = col + 1; j < chessBoard[0].length; j++) {
             if (chessBoard[row][j] === val) {
                 counter++;
             } else {
@@ -36,9 +36,9 @@ var GoBang = {
 
     //纵向判断
     isHorWin: function (chessBoard, row, col, val) {
-        var counter = 1;
+        let counter = 1;
         //向上，找连续棋子数
-        for (var i = row - 1; i >= 0; i--) {
+        for (let i = row - 1; i >= 0; i--) {
             if (chessBoard[i][col] === val) {
                 counter++;
             } else {
@@ -47,7 +47,7 @@ var GoBang = {
         }
 
         //2 向下，找连续棋子数
-        for (var i = row + 1; i < chessBoard.length; i++) {
+        for (let i = row + 1; i < chessBoard.length; i++) {
             if (chessBoard[i][col] === val) {
                 counter++;
             } else {
@@ -60,10 +60,10 @@ var GoBang = {
 
     //正对角向判断
     isPosDiagWin: function (chessBoard, row, col, val) {
-        var counter = 1;
+        let counter = 1;
 
         //1 右上, 找连续棋子数
-        for (var i = row - 1, j = col + 1; i >= 0 && j < chessBoard[0].length; i--, j++) {
+        for (let i = row - 1, j = col + 1; i >= 0 && j < chessBoard[0].length; i--, j++) {
             if (chessBoard[i][j] === val) {
                 counter++;
             } else {
@@ -71,7 +71,7 @@ var GoBang = {
             }
         }
         //2 左下, 找连续棋子数
-        for (var i = row + 1, j = col - 1; i < chessBoard.length && j >= 0; i++, j--) {
+        for (let i = row + 1, j = col - 1; i < chessBoard.length && j >= 0; i++, j--) {
             if (chessBoard[i][j] === val) {
                 counter++;
             } else {
@@ -84,9 +84,9 @@ var GoBang = {
 
     //斜对角向判断
     isNegDiagWin: function (chessBoard, row, col, val) {
-        var counter = 1;
+        let counter = 1;
         //1 左上, 找连续棋子数
-        for (var i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
+        for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
             if (chessBoard[i][j] === val) {
                 counter++;
             } else {
@@ -94,7 +94,7 @@ var GoBang = {
             }
         }
         //2 右下, 找连续棋子数
-        for (var i = row + 1, j = col + 1; i < chessBoard.length && j < chessBoard[0].length; i++, j++) {
+        for (let i = row + 1, j = col + 1; i < chessBoard.length && j < chessBoard[0].length; i++, j++) {
             if (chessBoard[i][j] === val) {
                 counter++;
             } else {
@@ -117,7 +117,7 @@ var GoBang = {
     },
 };
 
-var Game = {
+const Game = {
         //canvas 对象
         canvas: {
             context: [],     //canvas 对象
@@ -157,7 +157,7 @@ var Game = {
 
         //在页面画出棋子（DOM)
         drawDomBoard: function (row, col, val) {
-            var domId = row * Game.board.cols + col;
+            let domId = row * Game.board.cols + col;
             if (val === 1) {
                 $("#" + domId).css("backgroundImage", "url(images/b.png)");
             } else if (val === 2) {
@@ -169,13 +169,13 @@ var Game = {
 
         //在页面画出棋子（Canvas)
         drawCanvasBoard(row, col, val){
-            var w = Game.canvas.cellwidth;
-            var h = Game.canvas.cellheight;
+            let w = Game.canvas.cellwidth;
+            let h = Game.canvas.cellheight;
             Game.canvas.context.beginPath();
-            var offsetX = 5; //棋盘偏移值
-            var offsetY = 5;
+            let offsetX = 5; //棋盘偏移值
+            let offsetY = 5;
             Game.canvas.context.arc(row * w + w / 2 + offsetX , col * h + h / 2 + offsetY , w / 2 - 1, 0, 2 * Math.PI);//绘制棋子
-            var g = Game.canvas.context.createRadialGradient(row * w + w / 2 + offsetX, col * h + h / 2 + offsetY, w / 2 - 1, row * w + w / 2 + offsetX, col * h + h / 2 + offsetY, 0);//设置渐变
+            let g = Game.canvas.context.createRadialGradient(row * w + w / 2 + offsetX, col * h + h / 2 + offsetY, w / 2 - 1, row * w + w / 2 + offsetX, col * h + h / 2 + offsetY, 0);//设置渐变
             if (val === 1) {
                 g.addColorStop(0, '#0A0A0A');//黑棋
                 g.addColorStop(1, '#636766');
@@ -239,7 +239,7 @@ var Game = {
             }
 
             //获取当前棋子值，更新棋盘
-            var val = Game.info.isBlack ? 1 : 2; //1黑 2白
+            let val = Game.info.isBlack ? 1 : 2; //1黑 2白
             Game.updateBoard(row, col, val);
 
             if (Game.isGameOver(row, col, val)) {
@@ -247,7 +247,7 @@ var Game = {
                 Game.info.gameOver = true;
 
                 //发布比赛结果
-                var role = (val === 1 ? '黑方' : '白方');
+                let role = (val === 1 ? '黑方' : '白方');
                 $('#msg').html('游戏已结束，' + role + '赢了！');
                 $('#result').show();
             } else {
@@ -260,11 +260,11 @@ var Game = {
 
         //Dom版初始化棋盘，包括棋盘格子的点击事件、棋盘数据（二维数组)
         initDomBoard: function (rows, cols) {
-            var html = '';
-            var domId = 0;
+            let html = '';
+            let domId = 0;
 
-            for (var i = 0; i < rows; i++) {
-                for (var j = 0; j < cols; j++) {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
                     domId = i * cols + j;
                     html += '<div class="cell" id=' + domId + ' onClick=Game.boardClick(' + i + ',' + j +')>';
                     html += '</div>';
@@ -278,14 +278,14 @@ var Game = {
         initCanvasBoard: function (rows, cols) {
             $('#chess-board-wrapper').empty().append('<canvas id="chess-board-canvas" class="fl" width="535px" height="535px"></canvas>');
             $('#chess-board-canvas').on('click', function (e) {
-                var x = e.offsetX - 5; //相对于棋盘左上角的x坐标
-                var y = e.offsetY - 5; //相对于棋盘左上角的y坐标
-                var row = Math.floor(x / Game.canvas.cellwidth);
-                var col = Math.floor(y / Game.canvas.cellheight);
+                let x = e.offsetX - 5; //相对于棋盘左上角的x坐标
+                let y = e.offsetY - 5; //相对于棋盘左上角的y坐标
+                let row = Math.floor(x / Game.canvas.cellwidth);
+                let col = Math.floor(y / Game.canvas.cellheight);
                 Game.boardClick(row, col, 2);
             });
 
-            var board = $('#chess-board-canvas')[0];
+            let board = $('#chess-board-canvas')[0];
             Game.canvas.context = board.getContext('2d');
 
             $('#result').hide();
@@ -293,9 +293,9 @@ var Game = {
 
         //初始化棋盘数据
         initBoardData: function (rows, cols) {
-            for (var i = 0; i < rows; i++) {
+            for (let i = 0; i < rows; i++) {
                 Game.info.arrBoard[i] = [];
-                for (var j = 0; j < cols; j++) {
+                for (let j = 0; j < cols; j++) {
                     Game.info.arrBoard[i][j] = 0;
                 }
             }
@@ -350,7 +350,7 @@ var Game = {
 
             //悔棋，将棋子从走棋栈中出栈
             $('#btnWithdraw').on('click', function () {
-                var cell = Game.info.stackPlay.pop();
+                let cell = Game.info.stackPlay.pop();
                 if (cell === undefined) {
                     alert('已经没有棋可以悔了哦~');
                     Game.disableBtn('btnWithdraw');
@@ -370,7 +370,7 @@ var Game = {
 
             //撤销悔棋
             $('#btnUndoWithdraw').on('click', function () {
-                var cell = Game.info.stackWithDraw.pop();
+                let cell = Game.info.stackWithDraw.pop();
                 if (cell === undefined) {
                     alert('已经没有棋可以撤销了哦~');
                     Game.disableBtn('btnUndoWithdraw');
