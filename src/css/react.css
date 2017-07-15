@@ -2,6 +2,10 @@ body{
     background-color: #E3EDEC;
 }
 
+#login{
+
+}
+
 #login_name{
     width: 284px;
     border: 2px solid #689892;
@@ -32,7 +36,7 @@ body{
     margin-bottom: 5px;
 }
 
-#chess{
+#wrapper{
     width: 806px;
 }
 
@@ -43,7 +47,6 @@ body{
     white-space: nowrap;      /*规定段落中的文本不换行*/
     text-overflow: ellipsis;  /*省略号*/
 }
-
 
 .online div{
     margin:0 5px;
@@ -62,4 +65,15 @@ body{
 .online .me{
     display: block;
     width: 36px;
+    color: #da7c0c;
+}
+
+.room{
+    margin-left: 45px;
+}
+
+.online span.room-id{
+    color:red;
+    font-weight: bold;
+    float:none;
 }

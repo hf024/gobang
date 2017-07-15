@@ -2,14 +2,16 @@ body {
     display: flex;
     font: 400 16px "微软雅黑","宋体",sans-serif;
     color: #333333;
+    overflow: scroll;
 }
 div, p{margin:0; padding:0}
 input,button,select,textarea,a{outline:none}
-
+button:focus,a:focus{
+    outline: none;
+}
 h1{
-    width: 535px;
     text-align: center;
-    margin: 5px 0 15px 0;
+    margin-left: 220px;
 }
 
 ul {
@@ -32,6 +34,12 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
 根据给定的 left（x 坐标） 和 top（y 坐标）
 */
 
+#wrapper{
+    width: 766px;
+    position: absolute;
+    left: 50%;
+    margin-left: -403px;
+}
 .center{
     position: fixed;
     top: 50%;
@@ -43,16 +51,19 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
     transform: translate(-50%,-50%);    /* IE10+ */
 }
 
-#chess{
-    width: 766px;
+#chess-board-wrapper{
+    width: 535px;
+    height: 535px;
+    float: left;
 }
 
 .chess-board {
     background: url('../images/board_bg.jpg') no-repeat;
     width:535px;
     height:535px;
-    float: left;
     cursor: pointer;
+    position: relative;
+    padding: 4px;
 }
 
 .cell{
@@ -69,9 +80,11 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
     background-size: 32px 32px;
 }
 
+
 .curplayer{
     color: red;
     font-weight: bold;
+    margin-left: 4px;
 }
 
 .game-info{
@@ -80,13 +93,14 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
 }
 
 .game-role{
-    margin: 30px 0 30px 55px;
+    width: 120px;
+    margin: 30px 0 30px 54px;
     text-align: left;
     clear: both;
 }
 
 .button {
-    width: 100px;
+    width: 106px;
     display: inline-block;
     zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
     *display: inline;
@@ -95,8 +109,9 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
     cursor: pointer;
     text-align: center;
     text-decoration: none;
+    outline: none;
     font: 16px/100% Arial, Helvetica, sans-serif;
-    padding: .5em 0 .55em;
+    padding: 9px 0 10px;
     /*text-shadow: 0 1px 1px rgba(0,0,0,.3);*/
     -webkit-border-radius: .5em;
     -moz-border-radius: .5em;
@@ -172,7 +187,7 @@ button[disabled], button[disabled]:hover, button[disabled]:active{
     position: fixed;
     top: 300px;
     left: 50%;
-    margin-left: -296px;
+    margin-left: -96px;
     width: 360px;
     height: 132px;
     text-align: center;
