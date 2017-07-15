@@ -387,6 +387,15 @@ const Game = {
                     Game.disableBtn('btnUndoWithdraw');
                 }
             });
+
+            //退出游戏
+            $('#btnExit').on('click',function(){
+                if(confirm("您确定要退出游戏吗？")) {
+                    window.opener = null;
+                    window.open('', '_self');
+                    window.close();
+                }
+            });
         },
     };
 

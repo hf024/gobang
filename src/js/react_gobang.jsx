@@ -4,8 +4,8 @@
  * Author: apple
  * Date: 2017/7/10.
  */
-let React = require('react');
-let ReactDOM = require('react-dom');
+var React = require('react');
+var ReactDOM = require('react-dom');
 
 //登录处理
 let chess = document.getElementById('chess');
@@ -145,7 +145,7 @@ function Result(props) {
     );
 }
 //定义棋盘大小
-let board = {
+var board = {
     rows: 15,
     cols: 15,
 };
@@ -446,6 +446,13 @@ class GoBang extends React.Component {
         }
     }
 
+    exitGame(){
+        if(confirm("您确定要退出游戏吗？")) {
+            window.opener = null;
+            window.open('', '_self');
+            window.close();
+        }
+    }
 
     //渲染
     render() {
@@ -516,6 +523,7 @@ class GoBang extends React.Component {
                                 onClick={() => this.withdraw(this.state.stepNumber - 1, 1)}/>
                         <Button id='btn_undowithdraw' disabled={btn_undowithdraw_disabled} desc="撤销悔棋"
                                 onClick={() => this.withdraw(this.state.stepNumber + 1, 2)}/>
+                        <Button id="btn_exit" desc="退出" onClick={()=>this.exitGame()}/>
                         <li>
                             <a href="./gobang-dom.html" id="btnDom">切换到DOM版</a>
                         </li>

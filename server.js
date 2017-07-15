@@ -58,7 +58,8 @@ io.on('connection',  function(socket){
             //触发客户端事件，发送在线用户列表
             io.emit('addusers', onlineUser);
 
-            console.log(obj.username, 'is loginning');
+            console.log(obj.username, 'is loginning, 在线用户:',onlineUser, '在线人数', onlineuserNum);
+
         }else{
             console.log('socket_id:' + socket.id +' tried logging,but server refused it');
             io.to(socket.id).emit('fail');
@@ -93,7 +94,6 @@ io.on('connection',  function(socket){
 
     //悔棋事件
     socket.on('withdraw', function(data){
-        console.log('with:'+ data);
         io.emit('withdraw',data);
     });
 });
