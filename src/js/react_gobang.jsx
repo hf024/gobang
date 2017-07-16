@@ -39,8 +39,6 @@ username.onkeydown = function (e) {
 
 //在加载unload事件前执行
 window.onbeforeunload = function () {
-    alert('leave;' + room);
-    socket.emit('leave',{room:room});
     if (playing) {
         return '当前正在下棋中，你确定要离开吗？';
     }
@@ -136,12 +134,21 @@ function Button(props) {
 }
 
 function Result(props) {
+    var msg = '';
+    if (props.win) {
+        msg = '：恭喜你，赢了本局'
+    } else {
+        msg = '：非常抱歉，您输了'
+    }
     return (
         <div>
             <div className="mask"></div>
             <div id="info">
-                <div id="msg">{props.msg}</div>
-                <a className="btn" href="#" onClick={() => props.onClick()}>{props.desc}</a>
+                <div id="msg" className="clearfix"><span>{props.username}{msg}</span></div>
+                <div className="btn-result">
+                    <a className="btn btn-restart" href="#" onClick={() => props.onClickRestart()}>再来一局</a>
+                    <a className="btn-seeresult" href="#" onClick={() => props.onClickClose()}>看看结果</a>
+                </div>
             </div>
         </div>
     );
@@ -198,6 +205,8 @@ class GoBang extends React.Component {
             withdrawer: null,        //悔棋角色
             room: null,         //分配的房间号
             onlineUsers: {},   //在线用户列表
+            isuStart: null,    //你自己是否已经开始
+            isoStart: null,    //对方是否已经开始
         };
     }
 
@@ -208,23 +217,45 @@ class GoBang extends React.Component {
         //监听来自服务发出的alloc_role事件
         socket.on('alloc', function (msg) {
             if (msg.hasOwnProperty('role') && msg.role === 'b') {
-                that.setState({room: msg.room, meBlack: true,})
+                that.setState({room: msg.room, username: msg.username, meBlack: true,})
             } else if (msg.hasOwnProperty('role') && msg.role === 'w') {
-                that.setState({room: msg.room, meBlack: false,})
+                that.setState({room: msg.room, username: msg.username, meBlack: false,})
             } else {
-                that.setState({room: msg.room, meBlack: null})
+                that.setState({room: msg.room, username: msg.username, meBlack: null})
             }
-
-            room = msg.room;
         });
 
-        socket.on('addusers', function (users) {
-            that.setState({onlineUsers: users});
+        //监听房间人员变化事件
+        socket.on('users', function (users) {
+            var isuStart = null;
+            var isoStart = null;
+
+            for (var user in users) {
+                if (user === socket.id) {
+                    isuStart = users[user].status === 1;
+                } else {
+                    isoStart = users[user].status === 1;
+                }
+            }
+            that.setState({onlineUsers: users, isuStart: isuStart, isoStart: isoStart});
         });
-        socket.on('delusers', function (users) {
-            that.setState({onlineUsers: users});
-            alert('Sorry,对方已断开连接，只能重新开始咯');
-            that.restart(2);
+
+        //监听房间人离开事件
+        socket.on('deluser', function (users) {
+            that.setState({
+                squares: Array(board.rows * board.cols).fill(null),
+                stackPlay: [],
+                stackWithDraw: [],
+                gameOver: false,
+                pos: -1,
+                withdrawer: null,
+                isTurnBlack: true,
+                meBlack: that.state.meBlack,
+                seeResult: false,
+                onlineUsers: users,
+                isDelUser: true
+            });
+            ReactDOM.render(<div></div>, document.getElementById('result'));
         });
     }
 
@@ -253,11 +284,11 @@ class GoBang extends React.Component {
         //监听重新开始事件
         // type:
         // 1 发起重新开始（需要得到对方同意方可重新开始）
-        // 2 因对方离开，被动接受重新开始
-        // 3 因得到对方同意，双方重新开始
+        // 2 同意重新开始
         socket.on('restart', function (data) {
             var r = false;
             var type = parseInt(data.type);
+
             if (type === 1) {
                 if (data.meBlack === that.state.meBlack) {
                     r = true;
@@ -266,16 +297,16 @@ class GoBang extends React.Component {
                     if (r) { //如果同意，则通过服务器知会对方
                         socket.emit('restart', {
                             room: data.room,
+                            username: that.state.username,
                             isTurnBlack: data.isTurnBlack,
                             meBlack: that.state.meBlack,
-                            type: 3
+                            type: 2
                         });
                     }
                 }
             }
 
-            if (type === 2 || type === 3) {
-                //console.log('restart');
+            if (type === 2) {
                 that.setState({
                     squares: Array(board.rows * board.cols).fill(null),
                     stackPlay: [],
@@ -283,9 +314,9 @@ class GoBang extends React.Component {
                     gameOver: false,
                     pos: -1,
                     withdrawer: null,
+                    isDelUser: false,
                 });
                 ReactDOM.render(<div></div>, document.getElementById('result'));
-
             }
         });
 
@@ -305,11 +336,13 @@ class GoBang extends React.Component {
                     r = confirm('对方要求' + (type === 1 ? '悔棋' : '撤销悔棋') + '，你是否同意？');
                     if (r) { //如果同意，则通过服务器知会对方
                         socket.emit(
-                            "withdraw", {
+                            "withdraw",
+                            {
                                 room: data.room,
                                 meBlack: data.meBlack,
                                 type: type === 1 ? 3 : 4
-                            });
+                            }
+                        );
                     }
                 }
             }
@@ -343,34 +376,39 @@ class GoBang extends React.Component {
             return
         }
 
-        //游戏已经结束 或 棋盘上已经有棋子的地方不能再落子
-        if (this.state.gameOver || squares[i]) {
+
+        if (this.state.gameOver || this.state.seeResult) {
+            alert('游戏已结束，请重新开始吧！');
             return;
         }
+
+        if (!this.state.isuStart) {
+            alert('点击"开始游戏"按钮之后，才能开始游戏哦！');
+            return;
+        }
+
+        if (!this.state.isoStart) {
+            alert('对方还没有开始游戏，再等等他吧');
+            return;
+        }
+
+        //游戏已经结束 或 棋盘上已经有棋子的地方不能再落子
+        if (squares[i]) {
+            return;
+        }
+
 
         playing = true;
         //判断该谁落子
         if (this.state.isTurnBlack !== this.state.meBlack) {
-            alert('不着急，等对方先下吧~');
+            alert('不着急，对方还没下~');
             return;
         }
 
         socket.emit('play', {'room': this.state.room, 'pos': i, 'player': this.state.meBlack})
     }
 
-    //重新开始，分两种情况，1：主动发起，2：因对方离开，被动接受
-    restart(type) {
-        socket.emit('restart', {
-            'room': this.state.room,
-            "isTurnBlack": this.state.isTurnBlack,
-            "meBlack": this.state.meBlack,
-            "type": type
-        });
-    }
-
-
     componentDidUpdate() {
-
         var val = !this.state.isTurnBlack ? "1" : "2"; //1：黑棋 2：白棋
 
         //如果是悔棋，无需再判断
@@ -386,29 +424,27 @@ class GoBang extends React.Component {
         //console.log(squares, this.state.pos, val);
         // 更新的时候触发
         if (this.state.gameOver) {
+            //告诉服务器游戏结果
+            socket.emit('gameover', {room: this.state.room, win: !this.state.isTurnBlack === this.state.meBlack});
             playing = false;
-            var msg = '';
-            if (!this.state.isTurnBlack === this.state.meBlack) {
-                msg = '恭喜你，赢得本局。再来一局吧！';
-            } else {
-                msg = '非常抱歉，您输了。没关系，再来一局吧！';
-            }
+            var win = !this.state.isTurnBlack === this.state.meBlack;
             ReactDOM.render(
-                <Result msg={msg} desc="再来一局" onClick={() => this.restart(2)}/>,
+                <Result username={this.state.username} win={win} onClickClose={() => this.closeResult()}
+                        onClickRestart={() => this.startGame()}/>,
                 document.getElementById('result')
             )
         }
-
     }
 
     //悔棋/撤销悔棋事件触发 type: 1悔棋 2撤销悔棋
     withdraw(type) {
         if (confirm('需要对方的同意，你确定要' + (type === 1 ? '悔棋' : '撤销悔棋') + '吗？')) {
-            socket.emit('withdraw', {room:this.state.room, meBlack: this.state.meBlack, type: type});
+            socket.emit('withdraw', {room: this.state.room, meBlack: this.state.meBlack, type: type});
             document.getElementById('btn_withdraw').disabled = true;
         }
     }
 
+    //执行悔棋操作
     doWithDraw(type, role) {
         if (this.state.pos === -1) { //开始游戏之前，禁止悔棋和撤销悔棋操作
             return;
@@ -449,25 +485,82 @@ class GoBang extends React.Component {
         }
     }
 
+    //开始游戏，通过服务器知会房间里的其他人
+    startGame() {
+        this.setState({
+            squares: Array(board.rows * board.cols).fill(null),
+            stackPlay: [],
+            stackWithDraw: [],
+            gameOver: false,
+            pos: -1,
+            withdrawer: null,
+            isTurnBlack: this.state.isTurnBlack,
+            meBlack: this.state.meBlack,
+            seeResult: false,
+            isDelUser: false,
+        });
+        ReactDOM.render(<div></div>, document.getElementById('result'));
+
+        socket.emit('start', {room: this.state.room});
+    }
+
+    //重新开始
+    restartGame(type) {
+        socket.emit('restart', {
+            username: this.state.username,
+            room: this.state.room,
+            isTurnBlack: this.state.isTurnBlack,
+            meBlack: this.state.meBlack,
+            type: type
+        });
+    }
+
+    //退出游戏，通过服务器知会房间里的其他人
     exitGame() {
         if (confirm("您确定要退出游戏吗？")) {
-            socket.emit('leave',{room:this.state.room});
             window.location.reload();
         }
     }
+
+    //查看结果
+    closeResult() {
+        ReactDOM.render(<div></div>, document.getElementById('result'));
+
+        this.setState({
+            gameOver: false,
+            pos: -1,
+            seeResult: true,
+        });
+    }
+
 
     //渲染
     render() {
         var role = this.state.meBlack ? 'b' : 'w';
 
+        var btn_start_disabled = false;
         var btn_restart_disabled = false;
         var btn_withdraw_disabled = true;
         var btn_undowithdraw_disabled = true;
 
+        //开始游戏按钮可点击逻辑判断
+        if (this.state.seeResult || this.state.isDelUser) {
+            btn_start_disabled = false;
+        } else {
+            if (this.state.isuStart) {
+                btn_start_disabled = true;
+            } else {
+                btn_start_disabled = false;
+            }
+        }
+
         //悔棋按钮状态逻辑判断
         if (this.state.pos > -1) {
             btn_restart_disabled = false;
-            if (this.state.isTurnBlack !== this.state.meBlack && this.state.stackPlay.length > 0) {
+            if (this.state.gameOver || this.state.seeResult) {
+                btn_withdraw_disabled = true;
+                btn_restart_disabled = true;
+            } else if (this.state.isTurnBlack !== this.state.meBlack && this.state.stackPlay.length > 0) {
                 btn_withdraw_disabled = false;
             }
         } else {
@@ -478,7 +571,9 @@ class GoBang extends React.Component {
         //撤销悔棋按钮状态逻辑判断
         if (this.state.withdrawer !== '') {
             var withrow_role = this.state.meBlack ? 'b' : 'w';
-            if (this.state.withdrawer === withrow_role) {
+            if (this.state.gameOver || this.state.seeResult) {
+                btn_undowithdraw_disabled = true;
+            } else if (this.state.withdrawer === withrow_role) {
                 btn_undowithdraw_disabled = false;
             }
         } else {
@@ -486,37 +581,56 @@ class GoBang extends React.Component {
         }
 
         var msg = '';
-        var curplayer;
+        var curplayer = '';
         var i = 0;
         var num = 0;
         for (i in this.state.onlineUsers) {
             num++;
         }
-        if (num < 2) {
+        if (this.state.isDelUser) {
+            msg = '对方已离开，只能重新开始了~';
             curplayer = '';
-            msg = '你的玩伴还没有来，再等等吧~';
+        } else if (num < 2) {
+            msg = '玩伴还没有来，再等等吧~';
+        } else if (this.state.gameOver || this.state.seeResult) {
+            msg = '游戏已结束，重新开始吧~';
+            curplayer = '';
         } else {
             if (this.state.pos > -1) {
                 msg = '正在游戏中......';
+                curplayer = this.state.isTurnBlack === this.state.meBlack ? '我' : '对方';
             } else {
-                msg = '可以开始游戏了~';
+                if (this.state.isuStart) {
+                    if (this.state.isoStart) {
+                        msg = '可以开始了~';
+                        curplayer = this.state.isTurnBlack === this.state.meBlack ? '我' : '对方';
+                    } else {
+                        msg = '等待对方开始游戏';
+                    }
+                } else {
+                    if (this.state.isoStart) {
+                        msg = '对方在等你哦~';
+                    } else {
+                        msg = '亲，开始游戏吧~';
+                    }
+                }
             }
-            curplayer = this.state.isTurnBlack === this.state.meBlack ? '我' : '对方';
         }
 
         return (
             <div className="game clearfix">
                 <h1>React版五子棋(双人对战）</h1>
                 <div className="game-info">
-                    <OnlinePlayer  room = {this.state.room} role={role} online={this.state.onlineUsers}/>
+                    <OnlinePlayer room={this.state.room} role={role} online={this.state.onlineUsers}/>
                     <GameRole msg={msg} curplayer={curplayer}/>
                     <ul id="game-button">
-                        <Button disabled={btn_restart_disabled} desc="重新开始" onClick={() => this.restart(1)}/>
+                        <Button disabled={btn_start_disabled} desc="开始游戏" onClick={() => this.startGame()}/>
+                        <Button disabled={btn_restart_disabled} desc="重新开始" onClick={() => this.restartGame(1)}/>
                         <Button id='btn_withdraw' disabled={btn_withdraw_disabled} desc="悔棋"
                                 onClick={() => this.withdraw(1)}/>
                         <Button id='btn_undowithdraw' disabled={btn_undowithdraw_disabled} desc="撤销悔棋"
                                 onClick={() => this.withdraw(2)}/>
-                        <Button id="btn_exit" desc="退出" onClick={() => this.exitGame()}/>
+                        <Button id="btn_exit" desc="退出游戏" onClick={() => this.exitGame()}/>
                         <li>
                             <a href="./gobang-dom.html" id="btnDom">切换到DOM版</a>
                         </li>

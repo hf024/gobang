@@ -47,7 +47,6 @@ fs.readFile(__dirname + '/data/rooms.json', 'utf8', function (err, data) {
 var users = [];
 
 io.on('connection', function (socket) {
-
     //接收并处理客户端进入游戏房间的请求，为其分配房间和角色
     socket.on('join', function (obj) {
         for (var i in onlineRooms) {
@@ -70,53 +69,107 @@ io.on('connection', function (socket) {
 
         //房间未满员（少于两人)，可以进入房间
         if (room) {
-            var user = Object.assign(obj, {room: roomID, role: role});
+            var user = Object.assign(obj, {room: roomID, role: role, staus: 0});
             room.users[socket.id] = user;
 
             //通知同一个房间内的所有客户，用户列表发生变化
             socket.join(roomID);    // 加入房间
 
             // 通知房间内人员
-            io.to(roomID).emit('addusers', room.users);
+            io.to(roomID).emit('users', room.users);
 
             console.log(obj.username, '用户登录成功，分配的房间为：' + i + '，房间信息:');
             console.log(JSON.stringify(room));
-            res = Object.assign(obj, {res: 'ok'});
+            res = {res: 'ok'};
         } else {
             console.log('房间已满，' + obj.username, '用户登录失败');
-            res = Object.assign(obj, {res: 'fail'});
+            res = {res: 'fail'};
         }
         //向客户端公布分配结果
         io.to(socket.id).emit('join_res', res);
-        io.to(socket.id).emit('alloc',{room: roomID, role: role} );
+        io.to(socket.id).emit('alloc',{room: roomID, username: obj.username, role: role} );
     });
 
-    //离开游戏房间
-    socket.on('leave', function (data) {
-        socket.emit('disconnect', data);
-    });
+    //断开连接,根据socket_id查询用户所在房间号，做退出房间处理，并通知房里其他人
+    socket.on('disconnect', function () {
+        for(var i in onlineRooms){
+            for(var j in onlineRooms[i].users){
+                if(socket.id === j){
+                    roomID = i;
+                    username = onlineRooms[roomID].users[socket.id].username;
+                    delete  onlineRooms[roomID].users[socket.id];
 
-    //断开连接
-    socket.on('disconnect', function (data) {
-        roomID = data.room;
-        var username = null;
-        if(onlineRooms.hasOwnProperty(roomID)){
-            if (onlineRooms[roomID].users.hasOwnProperty(socket.id)) {
-                username = onlineRooms[roomID].users[socket.id].username;
-                delete  onlineRooms[roomID].users[socket.id];
+                    socket.leave(roomID);    // 退出房间
+
+                    //告知房间其他人：我离开了
+                    io.to(roomID).emit('deluser',onlineRooms[roomID].users);
+                    console.log(socket.id, '断开连接，' + username + '退出了房间' + roomID +'，并通知房间其他人，房间当前用户:');
+                    console.log(JSON.stringify(onlineRooms[roomID].users));
+                    break;
+                }
             }
+        }
 
-            socket.leave(roomID);    // 退出房间
-            io.to(roomID).emit('delusers',onlineRooms[roomID].users);
-            console.log(socket.id, '断开连接' +'(即：'+ username + '退出了房间' + roomID+')')
+        console.log(socket.id, '断开连接，该连接没有用户在任何房间中');
+    });
+
+    //开始游戏，通过服务器知会房间其他人
+    socket.on('start', function (data) {
+        roomID = data.room;
+        if(onlineRooms.hasOwnProperty(roomID)) {
+            if (onlineRooms[roomID].users.hasOwnProperty(socket.id)) {
+                onlineRooms[roomID].users[socket.id].status = 1;
+
+                //知会房间其他人
+                io.to(roomID).emit('users', onlineRooms[roomID].users);
+
+                console.log(socket.id + ' 房间：'+ roomID+ ', 用户：'  + onlineRooms[roomID].users[socket.id].username +'已经开始了');
+            }else{
+                console.log(socket.id + '房间：'+ roomID+ '，连接不存在，不能开始游戏');
+            }
+        }else{
+            console.log(socket.id + '房间：'+ roomID+ '不存在，不能开始游戏');
         }
     });
 
-    //重新开始
+
+    //处理客户端的重新开始事件：
+    // 一方发出请求，通过服务器把这个请求发送给房间其他人，由另一方做决定如何处理
     socket.on('restart', function (data) {
         roomID = data.room;
-        console.log(socket.id + '重新开始');
-        io.to(roomID).emit('restart', data);
+        if(onlineRooms.hasOwnProperty(roomID)) {
+            if (onlineRooms[roomID].users.hasOwnProperty(socket.id)) {
+                if(data.username === onlineRooms[roomID].users[socket.id].username){
+                    var msg = data.type === 1? '发起重新开始':'同意重新开始';
+
+                    //知会房间里面的其他人
+                    io.to(roomID).emit('restart', data);
+
+                    console.log(socket.id + ' 房间：'+ roomID+ ', 用户：' + data.username + msg);
+                }else{
+                    console.log( socket.id + ' 房间：'+ roomID+ ', 用户：' + data.username +'不存在');
+                }
+            }else{
+                console.log( socket.id + ' 房间：'+ roomID+ ', 连接不存在，不能重新开始');
+            }
+        }else{
+            console.log( socket.id + ' 房间不存在');
+        }
+    });
+
+    socket.on('gameover', function (data) {
+        roomID =  data.room;
+        var msg = data.win ? '赢了':'输了';
+        if(onlineRooms.hasOwnProperty(roomID)) {
+            if (onlineRooms[roomID].users.hasOwnProperty(socket.id)) {
+                onlineRooms[roomID].users[socket.id].status = 0;
+                console.log('房间：'+ roomID+ ',' + socket.id + ' 用户:' + onlineRooms[roomID].users[socket.id].username + ',' + msg);
+            }else{
+                console.log('房间：'+ roomID+ ',' + socket.id + '用户不存在，怎么结束的游戏？');
+            }
+        }else{
+            console.log('房间：'+ roomID+ '不存在,' + socket.id + '怎么结束的游戏？');
+        }
     });
 
     //点击下棋事件
