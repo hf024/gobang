@@ -136,9 +136,9 @@ function Button(props) {
 function Result(props) {
     var msg = '';
     if (props.win) {
-        msg = '：恭喜你，赢了这一局~'
+        msg = '恭喜你，赢了这一局~'
     } else {
-        msg = '：非常抱歉，这一局您输了'
+        msg = '非常抱歉，这一局您输了'
     }
     return (
         <div>
