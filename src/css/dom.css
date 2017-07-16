@@ -2,3 +2,8 @@ body{
     background-color: #cde4d8;
 }
 
+.btn-restart{
+    margin: 0;
+    position:relative;
+    left:0;
+}

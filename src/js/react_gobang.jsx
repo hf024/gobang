@@ -31,7 +31,7 @@ username.onkeydown = function (e) {
                 chess.style.display = 'block';
                 ReactDOM.render(<GoBang />, document.getElementById("chess"));
             } else {
-                alert('Sorry, 游戏已经满员（一次只能同时两个人玩），请稍后再试！');
+                alert('Sorry, 游戏已经满员，请稍后再试！');
             }
         });
     }
@@ -136,15 +136,15 @@ function Button(props) {
 function Result(props) {
     var msg = '';
     if (props.win) {
-        msg = '：恭喜你，赢了本局'
+        msg = '：恭喜你，赢了这一局~'
     } else {
-        msg = '：非常抱歉，您输了'
+        msg = '：非常抱歉，这一局您输了'
     }
     return (
         <div>
             <div className="mask"></div>
             <div id="info">
-                <div id="msg" className="clearfix"><span>{props.username}{msg}</span></div>
+                <div id="msg" className="clearfix"><span>{msg}</span></div>
                 <div className="btn-result">
                     <a className="btn btn-restart" href="#" onClick={() => props.onClickRestart()}>再来一局</a>
                     <a className="btn-seeresult" href="#" onClick={() => props.onClickClose()}>看看结果</a>
@@ -383,7 +383,7 @@ class GoBang extends React.Component {
         }
 
         if (!this.state.isuStart) {
-            alert('点击"开始游戏"按钮之后，才能开始游戏哦！');
+            alert('点击"开始游戏"按钮之后，才能开始哦！');
             return;
         }
 
@@ -429,7 +429,7 @@ class GoBang extends React.Component {
             playing = false;
             var win = !this.state.isTurnBlack === this.state.meBlack;
             ReactDOM.render(
-                <Result username={this.state.username} win={win} onClickClose={() => this.closeResult()}
+                <Result win={win} onClickClose={() => this.closeResult()}
                         onClickRestart={() => this.startGame()}/>,
                 document.getElementById('result')
             )
@@ -593,7 +593,7 @@ class GoBang extends React.Component {
         } else if (num < 2) {
             msg = '玩伴还没有来，再等等吧~';
         } else if (this.state.gameOver || this.state.seeResult) {
-            msg = '游戏已结束，重新开始吧~';
+                msg = '游戏已结束，重新开始吧~';
             curplayer = '';
         } else {
             if (this.state.pos > -1) {
@@ -602,7 +602,7 @@ class GoBang extends React.Component {
             } else {
                 if (this.state.isuStart) {
                     if (this.state.isoStart) {
-                        msg = '可以开始了~';
+                        msg = '游戏可以开始了~';
                         curplayer = this.state.isTurnBlack === this.state.meBlack ? '我' : '对方';
                     } else {
                         msg = '等待对方开始游戏';

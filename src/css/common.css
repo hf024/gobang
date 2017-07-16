@@ -20,7 +20,7 @@ ul {
 }
 
 ul li{
-    margin: 20px 0;
+    margin: 19px 0;
 }
 
 a{
@@ -94,7 +94,7 @@ transform: translate(left, top) 方法，元素从其当前位置移动，
 
 .game-role{
     width: 138px;
-    margin: 30px 0 30px 54px;
+    margin: 20px 0 30px 54px;
     text-align: left;
     clear: both;
 }
